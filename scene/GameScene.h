@@ -54,6 +54,8 @@ class GameScene {
 	//ビュープロジェクション
 	ViewProjection viewProjection_;
 
+	//カメラ上方向の角度
+	float viewAngle = 0.0f;
 
 	uint32_t textureHandle_ = 0;
 	DirectXCommon* dxCommon_ = nullptr;
