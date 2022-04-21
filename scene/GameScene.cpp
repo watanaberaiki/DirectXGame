@@ -37,12 +37,43 @@ void GameScene::Initialize() {
 	//// X,Y,X軸周りの平行移動を設定
 	// worldTransform_[i].translation_ = {posDist(engine), posDist(engine), posDist(engine)};
 
-	//親(0番)
-	worldTransform_[0].Initialize();
-	//子
-	worldTransform_[1].translation_ = {0, 4.5f, 0};
-	worldTransform_[1].parent_ = &worldTransform_[0];
-	worldTransform_[1].Initialize();
+	//キャラクターの大元
+	worldTransform_[PartId::Root].Initialize();
+	//脊髄
+	worldTransform_[PartId::Spine].translation_ = {0, 4.5f, 0};
+	worldTransform_[PartId::Spine].parent_ = &worldTransform_[PartId::Root];
+	worldTransform_[PartId::Spine].Initialize();
+
+	////上半身
+	//胸
+	worldTransform_[PartId::Chest].translation_ = {0, 0, 0};
+	worldTransform_[PartId::Chest].parent_ = &worldTransform_[PartId::Spine];
+	worldTransform_[PartId::Chest].Initialize();
+	//頭
+	worldTransform_[PartId::Head].translation_ = {0, 4.5f, 0};
+	worldTransform_[PartId::Head].parent_ = &worldTransform_[PartId::Chest];
+	worldTransform_[PartId::Head].Initialize();
+	//左腕
+	worldTransform_[PartId::ArmL].translation_ = {-4.5f, 0, 0};
+	worldTransform_[PartId::ArmL].parent_ = &worldTransform_[PartId::Chest];
+	worldTransform_[PartId::ArmL].Initialize();
+	//右腕
+	worldTransform_[PartId::ArmR].translation_ = {4.5f, 0, 0};
+	worldTransform_[PartId::ArmR].parent_ = &worldTransform_[PartId::Chest];
+	worldTransform_[PartId::ArmR].Initialize();
+	//下半身
+	//尻
+	worldTransform_[PartId::Hip].translation_ = {0, -4.5f, 0};
+	worldTransform_[PartId::Hip].parent_ = &worldTransform_[PartId::Spine];
+	worldTransform_[PartId::Hip].Initialize();
+	//左足
+	worldTransform_[PartId::LegL].translation_ = {-4.5f, -4.5f, 0};
+	worldTransform_[PartId::LegL].parent_ = &worldTransform_[PartId::Hip];
+	worldTransform_[PartId::LegL].Initialize();
+	//右足
+	worldTransform_[PartId::LegR].translation_ = {4.5f, -4.5f, 0};
+	worldTransform_[PartId::LegR].parent_ = &worldTransform_[PartId::Hip];
+	worldTransform_[PartId::LegR].Initialize();
 
 	////カメラ垂直方向視野角を設定
 	//viewProjection_.fovAngleY = XMConvertToRadians(5.0f);
@@ -231,10 +262,43 @@ void GameScene::Update() {
 		  worldTransform_[PartId::Root].translation_.z);
 	}
 
-	worldTransform_[0].UpdateMatrix();
-	worldTransform_[1].UpdateMatrix();
-	
+	worldTransform_[PartId::Root].UpdateMatrix();
+	worldTransform_[PartId::Spine].UpdateMatrix();
+	worldTransform_[PartId::Chest].UpdateMatrix();
+	worldTransform_[PartId::Head].UpdateMatrix();
+	worldTransform_[PartId::ArmL].UpdateMatrix();
+	worldTransform_[PartId::ArmR].UpdateMatrix();
+	worldTransform_[PartId::Hip].UpdateMatrix();
+	worldTransform_[PartId::LegL].UpdateMatrix();
+	worldTransform_[PartId::LegR].UpdateMatrix();
+
+	//上半身回転処理
+	{
+		//上半身の回転速さ[ラジアン/frame]
+		const float kChestRotSpeed = 0.05f;
+		
+		//押した方向で移動ベクトルを変更
+		if (input_->PushKey(DIK_U)) {
+			worldTransform_[PartId::Chest].rotation_.y -= kChestRotSpeed;
+		} else if (input_->PushKey(DIK_I)) {
+			worldTransform_[PartId::Chest].rotation_.y += kChestRotSpeed;
+		}
+	}
+
+	//下半身回転処理
+	{
+		//下半身の回転速さ[ラジアン/frame]
+		const float kHipRotSpeed = 0.05f;
+
+		//押した方向で移動ベクトルを変更
+		if (input_->PushKey(DIK_J)) {
+			worldTransform_[PartId::Hip].rotation_.y -= kHipRotSpeed;
+		} else if (input_->PushKey(DIK_K)) {
+			worldTransform_[PartId::Hip].rotation_.y += kHipRotSpeed;
+		}
+	}
 }
+
 
 void GameScene::Draw() {
 
@@ -264,8 +328,17 @@ void GameScene::Draw() {
 	/// </summary>
 
 	// 3Dモデル描画
-	model_->Draw(worldTransform_[0], viewProjection_, textureHandle_);
-	model_->Draw(worldTransform_[1], viewProjection_, textureHandle_);
+	/*model_->Draw(worldTransform_[PartId::Root], viewProjection_, textureHandle_);
+	model_->Draw(worldTransform_[PartId::Spine], viewProjection_, textureHandle_);*/
+	//上半身
+	model_->Draw(worldTransform_[PartId::Chest], viewProjection_, textureHandle_);
+	model_->Draw(worldTransform_[PartId::Head], viewProjection_, textureHandle_);
+	model_->Draw(worldTransform_[PartId::ArmL], viewProjection_, textureHandle_);
+	model_->Draw(worldTransform_[PartId::ArmR], viewProjection_, textureHandle_);
+	//下半身
+	model_->Draw(worldTransform_[PartId::Hip], viewProjection_, textureHandle_);
+	model_->Draw(worldTransform_[PartId::LegL], viewProjection_, textureHandle_);
+	model_->Draw(worldTransform_[PartId::LegR], viewProjection_, textureHandle_);
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion
